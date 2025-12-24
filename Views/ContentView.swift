@@ -66,3 +66,8 @@ struct ContentView: View {
 enum Tab: Hashable {
     case help, learn, read, converse, settings
 }
+
+
+#Preview {
+    ContentView()
+}

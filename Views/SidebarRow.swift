@@ -22,5 +22,14 @@ struct SidebarRow<LabelView: View>: View {
                 .contentShape(Rectangle())
                 .padding()
         }
+        .background(
+            Group {
+                if tab == selectedTab {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(.tint.opacity(0.25))
+                }
+            }
+        )
+        .padding(.horizontal, 5)
     }
 }
