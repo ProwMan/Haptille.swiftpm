@@ -22,7 +22,7 @@ struct readView: View {
             Button("Play") {
                 let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !text.isEmpty else { return }
-                Task { @MainActor in
+                Task {
                     await logic.play(text: text)
                 }
             }

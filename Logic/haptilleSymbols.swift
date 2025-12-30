@@ -11,5 +11,6 @@ enum HaptilleSymbol {
     case strong
     case weak
     case shortPause
+    case mediumPause
     case longPause
 }

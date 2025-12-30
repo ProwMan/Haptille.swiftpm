@@ -10,40 +10,44 @@ struct ContentView: View {
                     Label {
                         Text(" Help ")
                     } icon: {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundStyle(.tint)
+                        Image(systemName: "info")
+                            .foregroundStyle(Color(red: 0.839, green: 0.271, blue: 0.271))
                     }
                 })
-                SidebarRow(tab: .learn, selectedTab: $selectedTab, label: {
-                    Label {
-                        Text(" Learn ")
-                    } icon: {
-                        Image(systemName: "pencil.circle.fill")
-                            .foregroundStyle(.tint)
-                    }
-                })
+                
                 SidebarRow(tab: .read, selectedTab: $selectedTab, label: {
                     Label {
                         Text(" Read ")
                     } icon: {
                         Image(systemName: "document.fill")
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(Color(red: 0.145, green: 0.388, blue: 0.922))
                     }
                 })
+                
                 SidebarRow(tab: .converse, selectedTab: $selectedTab, label: {
                     Label {
                         Text(" Converse ")
                     } icon: {
                         Image(systemName: "bubble.left.and.text.bubble.right.fill")
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(Color(red: 0.173, green: 0.749, blue: 0.631))
                     }
                 })
+                
+                SidebarRow(tab: .learn, selectedTab: $selectedTab, label: {
+                    Label {
+                        Text(" Learn ")
+                    } icon: {
+                        Image(systemName: "pencil")
+                            .foregroundStyle(Color(red: 0.839, green: 0.620, blue: 0.180))
+                    }
+                })
+                
                 SidebarRow(tab: .settings, selectedTab: $selectedTab, label: {
                     Label {
                         Text(" Settings ")
                     } icon: {
                         Image(systemName: "gearshape.fill")
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(.gray)
                     }
                 })
             }

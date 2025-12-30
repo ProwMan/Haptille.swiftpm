@@ -11,7 +11,7 @@ import AVFoundation
 @MainActor
 private final class HapticHelper {
     static let shared = HapticHelper()
-    private let generator = UIImpactFeedbackGenerator(style: .rigid)
+    private let generator = UIImpactFeedbackGenerator(style: .heavy)
 
     func trigger(intensity: CGFloat) {
         generator.prepare()
@@ -36,36 +36,39 @@ actor HaptilleEngine {
         )!
         audioEngine.attach(player)
         audioEngine.connect(player, to: audioEngine.mainMixerNode, format: outputFormat)
+        player.volume = 1.0
         try? audioEngine.start()
     }
 
     func execute(_ symbol: HaptilleSymbol) async {
         switch symbol {
         case .strong:
-            await output(intensity: 1.0)
+            await output(intensity: 1.0, gain: 2.5)
         case .weak:
-            await output(intensity: 0.5)
+            await output(intensity: 0.25, gain: 1.0)
         case .shortPause:
             await sleep(seconds: HaptilleTiming.shortGap)
+        case .mediumPause:
+            await sleep(seconds: HaptilleTiming.mediumGap)
         case .longPause:
             await sleep(seconds: HaptilleTiming.longGap)
         }
     }
 
-    private func output(intensity: Float) async {
+    private func output(intensity: Float, gain: Float) async {
         let isPhone = await MainActor.run { UIDevice.current.userInterfaceIdiom == .phone }
         if isPhone {
             await MainActor.run {
                 HapticHelper.shared.trigger(intensity: CGFloat(intensity))
             }
         } else {
-            playSpeakerVibration(intensity: intensity)
+            playSpeakerVibration(intensity: intensity, gain: gain)
         }
 
         await sleep(seconds: HaptilleTiming.dotDuration)
     }
 
-    private func playSpeakerVibration(intensity: Float) {
+    private func playSpeakerVibration(intensity: Float, gain: Float) {
         let sampleRate = 44100
         let frequency: Float = 180
         let frameCount = Int(Float(sampleRate) * Float(HaptilleTiming.dotDuration))
@@ -80,7 +83,8 @@ actor HaptilleEngine {
         if let channelData = buffer.floatChannelData {
             for i in 0..<frameCount {
                 let wave = sin(2 * .pi * frequency * Float(i) / Float(sampleRate))
-                let sample = wave * intensity
+                let scaled = wave * intensity * gain
+                let sample = max(-1.0, min(1.0, scaled))
                 for channel in 0..<Int(outputFormat.channelCount) {
                     channelData[channel][i] = sample
                 }

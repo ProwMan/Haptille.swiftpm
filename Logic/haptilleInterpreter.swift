@@ -22,7 +22,7 @@ func haptilleSymbols(from text: String) -> [HaptilleSymbol] {
             for (index, letter) in word.enumerated() {
                 output.append(contentsOf: haptilleAlphabet[letter] ?? [])
                 if index < word.count - 1 {
-                    output.append(.shortPause)
+                    output.append(.mediumPause)
                 }
             }
             output.append(.longPause)
@@ -37,7 +37,7 @@ func haptilleSymbols(from text: String) -> [HaptilleSymbol] {
             } else if softPunctuation.contains(char) {
                 output.append(.shortPause)
             } else {
-                output.append(.shortPause)
+                output.append(.mediumPause)
             }
         }
     }

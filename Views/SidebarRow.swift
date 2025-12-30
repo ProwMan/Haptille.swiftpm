@@ -13,9 +13,9 @@ struct SidebarRow<LabelView: View>: View {
     let label: () -> LabelView
     
     var body: some View {
-        Button(action: {
+        Button {
             selectedTab = tab
-        }) {
+        } label: {
             label()
                 .font(.title2)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -23,12 +23,8 @@ struct SidebarRow<LabelView: View>: View {
                 .padding()
         }
         .background(
-            Group {
-                if tab == selectedTab {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(.tint.opacity(0.25))
-                }
-            }
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.tint.opacity(tab == selectedTab ? 0.25 : 0))
         )
         .padding(.horizontal, 5)
     }
