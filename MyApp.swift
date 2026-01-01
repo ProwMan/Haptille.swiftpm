@@ -4,10 +4,11 @@ import SwiftUI
 struct MyApp: App {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var showOnboarding = false
+    @State private var selectedTab: Tab = .help
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(selectedTab: $selectedTab)
                 .onAppear {
                     if !hasSeenOnboarding {
                         showOnboarding = true
@@ -17,6 +18,7 @@ struct MyApp: App {
                     OnboardingView {
                         hasSeenOnboarding = true
                         showOnboarding = false
+                        selectedTab = .learn
                     }
                 }
         }

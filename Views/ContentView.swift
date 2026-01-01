@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedTab: Tab = .help
+    @Binding var selectedTab: Tab
     
     var body: some View {
         NavigationSplitView {
@@ -52,7 +52,7 @@ struct ContentView: View {
                 })
             }
             .listStyle(.sidebar)
-            .navigationTitle("Sidebar")
+            .navigationTitle("Haptille")
         } detail: {
             Group {
                 switch selectedTab {
@@ -73,5 +73,5 @@ enum Tab: Hashable {
 
 
 #Preview {
-    ContentView()
+    ContentView(selectedTab: .constant(.help))
 }
