@@ -7,7 +7,7 @@
 
 import Foundation
 
-func haptilleSymbols(from text: String) -> [HaptilleSymbol] {
+func haptilleSymbols(from text: String, alphabet: [Character: [HaptilleSymbol]]) -> [HaptilleSymbol] {
     var output: [HaptilleSymbol] = []
     let sentenceTerminators: Set<Character> = [".", "!", "?"]
     let softPunctuation: Set<Character> = [",", ";", ":"]
@@ -20,7 +20,7 @@ func haptilleSymbols(from text: String) -> [HaptilleSymbol] {
 
         if let word = numberWords[char] {
             for (index, letter) in word.enumerated() {
-                output.append(contentsOf: haptilleAlphabet[letter] ?? [])
+                output.append(contentsOf: alphabet[letter] ?? [])
                 if index < word.count - 1 {
                     output.append(.mediumPause)
                 }
@@ -29,7 +29,7 @@ func haptilleSymbols(from text: String) -> [HaptilleSymbol] {
             continue
         }
 
-        let symbols = haptilleAlphabet[char] ?? []
+        let symbols = alphabet[char] ?? []
         if !symbols.isEmpty {
             output.append(contentsOf: symbols)
             if sentenceTerminators.contains(char) {

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Haptille uses the microphone to capture speech for Haptille conversion.</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>Haptille uses speech recognition to transcribe spoken text for Haptille conversion.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Haptille uses the camera to scan text for Haptille conversion.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Haptille uses your location to attach it to emergency messages.</string>
+    <key>NSContactsUsageDescription</key>
+    <string>Haptille needs access to contacts so you can choose emergency contacts.</string>
+</dict>
+</plist>

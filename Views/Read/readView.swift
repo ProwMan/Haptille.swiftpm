@@ -8,13 +8,17 @@
 import SwiftUI
 import VisionKit
 import UIKit
+import AVFoundation
 
 struct readView: View {
     @State private var inputText = ""
     @State private var showScanner = false
     @State private var isPlaying = false
+    @State private var playTask: Task<Void, Never>?
     @FocusState private var isTextFieldFocused: Bool
-    private let logic = HaptilleLogic()
+    @Environment(\.openURL) private var openURL
+    @State private var cameraAuthorization = AVCaptureDevice.authorizationStatus(for: .video)
+    private let logic = HaptilleLogic.shared
 
     private var hasText: Bool { !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     private var canScan: Bool { DataScannerViewController.isSupported && DataScannerViewController.isAvailable }
@@ -37,11 +41,40 @@ struct readView: View {
                 onDone: playHaptille
             )
 
+            if cameraAuthorization == .denied || cameraAuthorization == .restricted {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Camera access is off.")
+                        .font(.footnote)
+                    Button("Open Settings") {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            openURL(url)
+                        }
+                    }
+                    .font(.footnote)
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+                .foregroundStyle(.secondary)
+            }
+
             Spacer()
         }
         .padding()
         .fullScreenCover(isPresented: $showScanner) {
             textScannerView(scannedText: $inputText, isPresented: $showScanner)
+        }
+        .onAppear {
+            cameraAuthorization = AVCaptureDevice.authorizationStatus(for: .video)
+            PermissionGate.runOnce(key: "hasRequestedReadCameraPermission") {
+                AVCaptureDevice.requestAccess(for: .video) { _ in
+                    DispatchQueue.main.async {
+                        cameraAuthorization = AVCaptureDevice.authorizationStatus(for: .video)
+                    }
+                }
+            }
+        }
+        .onDisappear {
+            stopPlayback()
         }
     }
 
@@ -65,12 +98,21 @@ struct readView: View {
         guard !isPlaying else { return }
         isPlaying = true
         isTextFieldFocused = false
-        Task {
+        playTask = Task {
             await logic.play(text: text)
             await MainActor.run {
                 isPlaying = false
             }
         }
+    }
+
+    private func stopPlayback() {
+        playTask?.cancel()
+        playTask = nil
+        Task {
+            await logic.stop()
+        }
+        isPlaying = false
     }
 }
 

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @Binding var selectedTab: Tab
+    @EnvironmentObject private var helpMessageCoordinator: HelpMessageCoordinator
     
     var body: some View {
         NavigationSplitView {
@@ -11,7 +12,7 @@ struct ContentView: View {
                         Text(" Help ")
                     } icon: {
                         Image(systemName: "info")
-                            .foregroundStyle(Color(red: 0.839, green: 0.271, blue: 0.271))
+                            .foregroundStyle(AppColors.help)
                     }
                 })
                 
@@ -20,7 +21,7 @@ struct ContentView: View {
                         Text(" Read ")
                     } icon: {
                         Image(systemName: "document.fill")
-                            .foregroundStyle(Color(red: 0.145, green: 0.388, blue: 0.922))
+                            .foregroundStyle(AppColors.read)
                     }
                 })
                 
@@ -29,7 +30,7 @@ struct ContentView: View {
                         Text(" Converse ")
                     } icon: {
                         Image(systemName: "bubble.left.and.text.bubble.right.fill")
-                            .foregroundStyle(Color(red: 0.173, green: 0.749, blue: 0.631))
+                            .foregroundStyle(AppColors.converse)
                     }
                 })
                 
@@ -38,7 +39,7 @@ struct ContentView: View {
                         Text(" Learn ")
                     } icon: {
                         Image(systemName: "pencil")
-                            .foregroundStyle(Color(red: 0.839, green: 0.620, blue: 0.180))
+                            .foregroundStyle(AppColors.learn)
                     }
                 })
                 
@@ -47,7 +48,7 @@ struct ContentView: View {
                         Text(" Settings ")
                     } icon: {
                         Image(systemName: "gearshape.fill")
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(AppColors.settings)
                     }
                 })
             }
@@ -60,9 +61,16 @@ struct ContentView: View {
                 case .learn: learnView()
                 case .read: readView()
                 case .converse: converseView()
-                case .settings: settingsView()
+                case .settings: settingsView(selectedTab: $selectedTab)
                 }
             }
+        }
+        .sheet(item: $helpMessageCoordinator.draft) { draft in
+            MessageComposer(
+                recipients: draft.recipients,
+                body: draft.body,
+                onFinish: { helpMessageCoordinator.dismiss() }
+            )
         }
     }
 }
@@ -74,4 +82,7 @@ enum Tab: Hashable {
 
 #Preview {
     ContentView(selectedTab: .constant(.help))
+        .environmentObject(EmergencyContactsStore())
+        .environmentObject(HelpMessageCoordinator())
+        .environmentObject(HaptilleSettingsStore())
 }

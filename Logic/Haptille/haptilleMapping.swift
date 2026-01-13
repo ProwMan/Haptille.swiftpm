@@ -7,7 +7,7 @@
 
 import Foundation
 
-let haptilleAlphabet: [Character: [HaptilleSymbol]] = [
+let defaultHaptilleAlphabet: [Character: [HaptilleSymbol]] = [
     "a": [.weak, .shortPause, .shortPause],
     "b": [.weak, .weak, .shortPause],
     "c": [.strong, .shortPause, .shortPause],
@@ -35,12 +35,9 @@ let haptilleAlphabet: [Character: [HaptilleSymbol]] = [
     "y": [.strong, .weak, .strong],
     "z": [.weak, .weak, .strong],
 
-    // Space
-    " ": [.longPause],
-
     // Punctuation
     ".": [.shortPause, .strong, .weak],
-    ",": [.shortPause, .weak,.shortPause],
+    ",": [.shortPause, .weak, .shortPause],
     "?": [.shortPause, .weak, .strong],
     "!": [.shortPause, .strong, .weak]
 ]

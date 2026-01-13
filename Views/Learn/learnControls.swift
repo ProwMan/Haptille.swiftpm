@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct learnControls: View {
-    let accentColor: Color = Color(red: 0.839, green: 0.620, blue: 0.180)
     let isPlaying: Bool
     let isFirst: Bool
     let isLast: Bool
@@ -32,6 +31,6 @@ struct learnControls: View {
                 .disabled(isPlaying)
         }
         .controlSize(.large)
-        .tint(accentColor)
+        .tint(AppColors.learn)
     }
 }
