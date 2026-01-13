@@ -1,16 +1,9 @@
-//
-//  readView.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 import VisionKit
 import UIKit
 import AVFoundation
 
-struct readView: View {
+struct ReadView: View {
     @State private var inputText = ""
     @State private var showScanner = false
     @State private var isPlaying = false
@@ -32,7 +25,7 @@ struct readView: View {
                 .textFieldStyle(.roundedBorder)
                 .focused($isTextFieldFocused)
 
-            readActions(
+            ReadActions(
                 canScan: canScan,
                 hasText: hasText,
                 isPlaying: isPlaying,
@@ -61,7 +54,7 @@ struct readView: View {
         }
         .padding()
         .fullScreenCover(isPresented: $showScanner) {
-            textScannerView(scannedText: $inputText, isPresented: $showScanner)
+            TextScannerView(scannedText: $inputText, isPresented: $showScanner)
         }
         .onAppear {
             cameraAuthorization = AVCaptureDevice.authorizationStatus(for: .video)
@@ -117,5 +110,5 @@ struct readView: View {
 }
 
 #Preview {
-    readView()
+    ReadView()
 }

@@ -4,81 +4,70 @@ import Foundation
 @MainActor
 final class LocationProvider: NSObject, ObservableObject {
     enum LocationError: Error {
-        case permissionDenied
+        case denied
         case unavailable
     }
 
-    @Published private(set) var authorizationStatus: CLAuthorizationStatus
+    @Published private(set) var status: CLAuthorizationStatus
 
-    private let manager: CLLocationManager
+    private let manager = CLLocationManager()
     private var completion: (@MainActor (Result<CLLocation, Error>) -> Void)?
     private var delegate: Delegate?
 
     override init() {
-        manager = CLLocationManager()
-        authorizationStatus = manager.authorizationStatus
+        status = manager.authorizationStatus
         super.init()
-        let delegate = Delegate(provider: self)
-        self.delegate = delegate
+        delegate = Delegate(provider: self)
         manager.delegate = delegate
         manager.desiredAccuracy = kCLLocationAccuracyBest
     }
 
     func requestLocation(completion: @escaping @MainActor (Result<CLLocation, Error>) -> Void) {
         self.completion = completion
-        authorizationStatus = manager.authorizationStatus
+        status = manager.authorizationStatus
 
-        switch authorizationStatus {
+        switch status {
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
-            return
         case .restricted, .denied:
             self.completion = nil
-            completion(.failure(LocationError.permissionDenied))
-            return
+            completion(.failure(LocationError.denied))
         default:
-            break
+            manager.requestLocation()
         }
-
-        manager.requestLocation()
     }
 
-    fileprivate func handleAuthorizationChange(_ status: CLAuthorizationStatus) {
-        authorizationStatus = status
-        switch status {
+    fileprivate func onAuthChange(_ newStatus: CLAuthorizationStatus) {
+        status = newStatus
+
+        switch newStatus {
         case .authorizedAlways, .authorizedWhenInUse:
-            if completion != nil {
-                manager.requestLocation()
-            }
+            if completion != nil { manager.requestLocation() }
         case .restricted, .denied:
-            if let completion {
-                self.completion = nil
-                completion(.failure(LocationError.permissionDenied))
+            if let cb = completion {
+                completion = nil
+                cb(.failure(LocationError.denied))
             }
         default:
             break
         }
     }
 
-    fileprivate func handleLocations(_ locations: [CLLocation]) {
-        guard let location = locations.last else {
-            if let completion {
-                self.completion = nil
-                completion(.failure(LocationError.unavailable))
-            }
-            return
-        }
+    fileprivate func onLocations(_ locations: [CLLocation]) {
+        guard let cb = completion else { return }
+        completion = nil
 
-        if let completion {
-            self.completion = nil
-            completion(.success(location))
+        if let location = locations.last {
+            cb(.success(location))
+        } else {
+            cb(.failure(LocationError.unavailable))
         }
     }
 
-    fileprivate func handleError(_ error: Error) {
-        if let completion {
-            self.completion = nil
-            completion(.failure(error))
+    fileprivate func onError(_ error: Error) {
+        if let cb = completion {
+            completion = nil
+            cb(.failure(error))
         }
     }
 }
@@ -93,23 +82,17 @@ private final class Delegate: NSObject, CLLocationManagerDelegate, @unchecked Se
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
         let provider = self.provider
-        Task { @MainActor in
-            provider?.handleAuthorizationChange(status)
-        }
+        Task { @MainActor in provider?.onAuthChange(status) }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let provider = self.provider
-        Task { @MainActor in
-            provider?.handleLocations(locations)
-        }
+        Task { @MainActor in provider?.onLocations(locations) }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         let err = error
         let provider = self.provider
-        Task { @MainActor in
-            provider?.handleError(err)
-        }
+        Task { @MainActor in provider?.onError(err) }
     }
 }

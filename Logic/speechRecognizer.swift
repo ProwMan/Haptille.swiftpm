@@ -1,15 +1,8 @@
-//
-//  speechRecognizer.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import AVFoundation
 import Speech
 
 @MainActor
-final class speechRecognizer: ObservableObject {
+final class SpeechRecognizer: ObservableObject {
     @Published var transcript = ""
     @Published var isRecording = false
     @Published var isAuthorized = false
@@ -18,38 +11,39 @@ final class speechRecognizer: ObservableObject {
     private var audioEngine: AVAudioEngine?
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
-    private var speechAuthorized = false
-    private var micAuthorized = false
-    private var hasUsageDescriptions: Bool {
-        Bundle.main.object(forInfoDictionaryKey: "NSMicrophoneUsageDescription") != nil
-            && Bundle.main.object(forInfoDictionaryKey: "NSSpeechRecognitionUsageDescription") != nil
+    private var speechOk = false
+    private var micOk = false
+
+    private var hasPermissionKeys: Bool {
+        let mic = Bundle.main.object(forInfoDictionaryKey: "NSMicrophoneUsageDescription")
+        let speech = Bundle.main.object(forInfoDictionaryKey: "NSSpeechRecognitionUsageDescription")
+        return mic != nil && speech != nil
     }
 
     func requestAuthorization() {
-        guard hasUsageDescriptions else {
+        guard hasPermissionKeys else {
             isAuthorized = false
             return
         }
 
         SFSpeechRecognizer.requestAuthorization { [weak self] status in
             Task { @MainActor in
-                guard let self else { return }
-                self.speechAuthorized = status == .authorized
-                self.updateAuthorization()
+                self?.speechOk = status == .authorized
+                self?.updateAuth()
             }
         }
 
         AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
             Task { @MainActor in
-                guard let self else { return }
-                self.micAuthorized = granted
-                self.updateAuthorization()
+                self?.micOk = granted
+                self?.updateAuth()
             }
         }
     }
 
     func startRecording() throws {
-        guard hasUsageDescriptions else { return }
+        guard hasPermissionKeys else { return }
+
         if recognizer == nil {
             recognizer = SFSpeechRecognizer()
         }
@@ -75,7 +69,6 @@ final class speechRecognizer: ObservableObject {
         let inputNode = audioEngine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
 
-        // Guard against invalid audio format (e.g., 0 channels on simulator)
         guard format.channelCount > 0 else {
             isRecording = false
             return
@@ -83,7 +76,6 @@ final class speechRecognizer: ObservableObject {
 
         inputNode.removeTap(onBus: 0)
 
-        // Capture request locally to avoid accessing @MainActor self from audio thread
         let currentRequest = request
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
             currentRequest?.append(buffer)
@@ -94,14 +86,14 @@ final class speechRecognizer: ObservableObject {
         isRecording = true
 
         guard let request else { return }
+
         task = recognizer.recognitionTask(with: request) { [weak self] result, error in
             Task { @MainActor in
-                guard let self else { return }
-                if let result = result {
-                    self.transcript = result.bestTranscription.formattedString
+                if let result {
+                    self?.transcript = result.bestTranscription.formattedString
                 }
                 if result?.isFinal == true || error != nil {
-                    self.stopRecording()
+                    self?.stopRecording()
                 }
             }
         }
@@ -121,7 +113,7 @@ final class speechRecognizer: ObservableObject {
         isRecording = false
     }
 
-    private func updateAuthorization() {
-        isAuthorized = speechAuthorized && micAuthorized
+    private func updateAuth() {
+        isAuthorized = speechOk && micOk
     }
 }

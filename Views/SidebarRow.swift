@@ -1,10 +1,3 @@
-//
-//  SidebarRow.swift
-//  Haptille
-//
-//  Created by Madhan on 24/12/25.
-//
-
 import SwiftUI
 
 struct SidebarRow<LabelView: View>: View {

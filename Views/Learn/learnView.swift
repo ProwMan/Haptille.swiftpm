@@ -1,13 +1,6 @@
-//
-//  learnView.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 
-struct learnView: View {
+struct LearnView: View {
     @EnvironmentObject private var haptilleSettings: HaptilleSettingsStore
     private let logic = HaptilleLogic.shared
 
@@ -46,14 +39,14 @@ struct learnView: View {
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            learnCharacterCard(
+            LearnCharacterCard(
                 item: currentItem,
                 index: currentIndex + 1,
                 total: items.count,
                 pattern: pattern(for: currentItem)
             )
 
-            learnControls(
+            LearnControls(
                 isPlaying: isPlaying,
                 isFirst: isFirst,
                 isLast: isLast,
@@ -131,6 +124,6 @@ struct learnView: View {
 }
 
 #Preview {
-    learnView()
+    LearnView()
         .environmentObject(HaptilleSettingsStore())
 }

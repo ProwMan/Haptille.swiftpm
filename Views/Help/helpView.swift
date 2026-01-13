@@ -1,15 +1,8 @@
-//
-//  helpView.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import CoreLocation
 import MessageUI
 import SwiftUI
 
-struct helpView: View {
+struct HelpView: View {
     @EnvironmentObject private var emergencyContacts: EmergencyContactsStore
     @EnvironmentObject private var helpMessageCoordinator: HelpMessageCoordinator
     @StateObject private var locationProvider = LocationProvider()
@@ -131,7 +124,7 @@ struct helpView: View {
 }
 
 #Preview {
-    helpView()
+    HelpView()
         .environmentObject(EmergencyContactsStore())
         .environmentObject(HelpMessageCoordinator())
 }

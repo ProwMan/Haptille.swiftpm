@@ -1,16 +1,9 @@
-//
-//  ConversePane.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 
 struct ConversePane: View {
     let title: String
-    @ObservedObject var recognizer: speechRecognizer
-    @ObservedObject var otherRecognizer: speechRecognizer
+    @ObservedObject var recognizer: SpeechRecognizer
+    @ObservedObject var otherRecognizer: SpeechRecognizer
     @Binding var isDeafBlindMode: Bool
     let labelEdgePadding: CGFloat
     let onToggleRecording: () -> Void

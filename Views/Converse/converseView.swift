@@ -1,13 +1,6 @@
-//
-//  converseView.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 
-struct converseView: View {
+struct ConverseView: View {
     @StateObject private var model = ConverseViewModel()
     var body: some View {
         GeometryReader { proxy in
@@ -55,5 +48,5 @@ struct converseView: View {
 }
 
 #Preview {
-    converseView()
+    ConverseView()
 }

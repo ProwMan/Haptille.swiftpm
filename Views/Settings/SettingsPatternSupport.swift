@@ -1,21 +1,14 @@
-//
-//  SettingsPatternSupport.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 
-extension settingsView {
+extension SettingsView {
     var letters: [Character] {
-        haptilleSettings.alphabet.keys
+        settings.alphabet.keys
             .filter { $0.isLetter }
             .sorted { String($0) < String($1) }
     }
 
     var punctuation: [Character] {
-        haptilleSettings.alphabet.keys
+        settings.alphabet.keys
             .filter { !$0.isLetter && !$0.isNumber }
             .sorted { String($0) < String($1) }
     }
@@ -48,7 +41,7 @@ extension settingsView {
 
     private var duplicateLookup: [Character: [Character]] {
         var grouped: [String: [Character]] = [:]
-        for character in haptilleSettings.alphabet.keys {
+        for character in settings.alphabet.keys {
             let pattern = normalizedPattern(for: character)
             let key = pattern.map(\.rawValue).joined(separator: "|")
             grouped[key, default: []].append(character)
@@ -70,7 +63,7 @@ extension settingsView {
         let allowsTrailingBlank = allowsTrailingBlank(for: character)
         return Binding(
             get: {
-                let base = haptilleSettings.alphabet[character]
+                let base = settings.alphabet[character]
                     ?? defaultHaptilleAlphabet[character]
                     ?? [.weak, .shortPause, .shortPause]
                 return normalizedPattern(
@@ -81,7 +74,7 @@ extension settingsView {
                 )
             },
             set: { newValue in
-                haptilleSettings.alphabet[character] = normalizedPattern(
+                settings.alphabet[character] = normalizedPattern(
                     newValue,
                     slotCount: slotCount,
                     allowedSymbols: allowedSymbols,
@@ -109,7 +102,7 @@ extension settingsView {
     }
 
     private func normalizedPattern(for character: Character) -> [HaptilleSymbol] {
-        let base = haptilleSettings.alphabet[character]
+        let base = settings.alphabet[character]
             ?? defaultHaptilleAlphabet[character]
             ?? [.weak, .shortPause, .shortPause]
         let allowsTrailingBlank = allowsTrailingBlank(for: character)
@@ -140,7 +133,7 @@ extension settingsView {
 
     private func blankSlots(for character: Character) -> Set<Int> {
         guard character.isLetter else { return [] }
-        let base = haptilleSettings.alphabet[character]
+        let base = settings.alphabet[character]
             ?? defaultHaptilleAlphabet[character]
             ?? []
         let slotCount = slotCount(for: character)

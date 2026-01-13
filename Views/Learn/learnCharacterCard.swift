@@ -1,13 +1,6 @@
-//
-//  learnCharacterCard.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 
-struct learnCharacterCard: View {
+struct LearnCharacterCard: View {
     let item: LearnItem
     let index: Int
     let total: Int
@@ -97,7 +90,7 @@ struct learnCharacterCard: View {
 }
 
 #Preview {
-    learnCharacterCard(
+    LearnCharacterCard(
         item: .character("a"),
         index: 1,
         total: 2,

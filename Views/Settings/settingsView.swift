@@ -1,16 +1,9 @@
-//
-//  settingsView.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 
-struct settingsView: View {
+struct SettingsView: View {
     @Binding var selectedTab: Tab
-    @EnvironmentObject private var emergencyContacts: EmergencyContactsStore
-    @EnvironmentObject var haptilleSettings: HaptilleSettingsStore
+    @EnvironmentObject private var contacts: EmergencyContactsStore
+    @EnvironmentObject var settings: HaptilleSettingsStore
     @State private var showOnboarding = false
     @State private var showContactPicker = false
     @State private var showPhonePicker = false
@@ -47,13 +40,13 @@ struct settingsView: View {
                             Spacer()
                         }
 
-                        if emergencyContacts.contacts.isEmpty {
+                        if contacts.contacts.isEmpty {
                             Text("No emergency contacts yet.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         } else {
                             VStack(spacing: 10) {
-                                ForEach(emergencyContacts.contacts) { contact in
+                                ForEach(contacts.contacts) { contact in
                                     HStack(alignment: .firstTextBaseline) {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(contact.name)
@@ -64,7 +57,7 @@ struct settingsView: View {
                                         }
                                         Spacer()
                                         Button(role: .destructive) {
-                                            emergencyContacts.removeContact(contact)
+                                            contacts.removeContact(contact)
                                         } label: {
                                             Image(systemName: "trash")
                                         }
@@ -82,7 +75,7 @@ struct settingsView: View {
                     SettingsSection(title: "Sound Frequency") {
                         SettingSliderRow(
                             title: "Frequency",
-                            value: $haptilleSettings.frequency,
+                            value: $settings.frequency,
                             range: 80...400,
                             step: 5,
                             valueFormat: "%.0f Hz"
@@ -92,7 +85,7 @@ struct settingsView: View {
                     SettingsSection(title: "Pause Durations") {
                         SettingSliderRow(
                             title: "Short pause",
-                            value: $haptilleSettings.shortGap,
+                            value: $settings.shortGap,
                             range: 0.2...3.0,
                             step: 0.1,
                             valueFormat: "%.1f s"
@@ -100,7 +93,7 @@ struct settingsView: View {
 
                         SettingSliderRow(
                             title: "Medium pause",
-                            value: $haptilleSettings.mediumGap,
+                            value: $settings.mediumGap,
                             range: 0.2...3.5,
                             step: 0.1,
                             valueFormat: "%.1f s"
@@ -108,7 +101,7 @@ struct settingsView: View {
 
                         SettingSliderRow(
                             title: "Long pause",
-                            value: $haptilleSettings.longGap,
+                            value: $settings.longGap,
                             range: 0.2...4.0,
                             step: 0.1,
                             valueFormat: "%.1f s"
@@ -149,7 +142,7 @@ struct settingsView: View {
                     showContactPicker = false
 
                     if phones.count == 1, let phone = phones.first {
-                        emergencyContacts.addContact(name: name, phone: phone)
+                        contacts.addContact(name: name, phone: phone)
                     } else if phones.count > 1 {
                         showPhonePicker = true
                     }
@@ -164,7 +157,7 @@ struct settingsView: View {
         ) {
             ForEach(pendingPhoneNumbers, id: \.self) { phone in
                 Button(phone) {
-                    emergencyContacts.addContact(name: pendingContactName, phone: phone)
+                    contacts.addContact(name: pendingContactName, phone: phone)
                 }
             }
             Button("Cancel", role: .cancel) {}
@@ -176,7 +169,7 @@ struct settingsView: View {
                 showOnboarding = false
                 shouldSelectLearn = true
             }
-            .environmentObject(emergencyContacts)
+            .environmentObject(contacts)
         }
         .onChange(of: showOnboarding) { isPresented in
             if !isPresented, shouldSelectLearn {
@@ -188,7 +181,7 @@ struct settingsView: View {
         }
         .alert("Reset to factory defaults?", isPresented: $showResetConfirmation) {
             Button("Reset", role: .destructive) {
-                haptilleSettings.resetToDefaults()
+                settings.resetToDefaults()
             }
             Button("Cancel", role: .cancel) {}
         } message: {
@@ -198,7 +191,7 @@ struct settingsView: View {
 }
 
 #Preview {
-    settingsView(selectedTab: .constant(.settings))
+    SettingsView(selectedTab: .constant(.settings))
         .environmentObject(EmergencyContactsStore())
         .environmentObject(HaptilleSettingsStore())
 }

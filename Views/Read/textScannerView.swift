@@ -1,14 +1,7 @@
-//
-//  textScannerView.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 import VisionKit
 
-struct textScannerView: UIViewControllerRepresentable {
+struct TextScannerView: UIViewControllerRepresentable {
     @Binding var scannedText: String
     @Binding var isPresented: Bool
 
@@ -36,9 +29,9 @@ struct textScannerView: UIViewControllerRepresentable {
     }
 
     final class Coordinator: NSObject, DataScannerViewControllerDelegate {
-        let parent: textScannerView
+        let parent: TextScannerView
 
-        init(parent: textScannerView) {
+        init(parent: TextScannerView) {
             self.parent = parent
         }
 

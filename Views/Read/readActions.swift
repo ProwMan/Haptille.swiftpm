@@ -1,13 +1,6 @@
-//
-//  readActions.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 
-struct readActions: View {
+struct ReadActions: View {
     let canScan: Bool
     let hasText: Bool
     let isPlaying: Bool

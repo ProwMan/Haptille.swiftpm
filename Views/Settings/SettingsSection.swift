@@ -1,10 +1,3 @@
-//
-//  SettingsSection.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 
 struct SettingsSection<Content: View>: View {

@@ -2,74 +2,52 @@ import SwiftUI
 
 struct ContentView: View {
     @Binding var selectedTab: Tab
-    @EnvironmentObject private var helpMessageCoordinator: HelpMessageCoordinator
-    
+    @EnvironmentObject private var messageCoordinator: HelpMessageCoordinator
+
     var body: some View {
         NavigationSplitView {
             List {
-                SidebarRow(tab: .help, selectedTab: $selectedTab, label: {
-                    Label {
-                        Text(" Help ")
-                    } icon: {
-                        Image(systemName: "info")
-                            .foregroundStyle(AppColors.help)
-                    }
-                })
-                
-                SidebarRow(tab: .read, selectedTab: $selectedTab, label: {
-                    Label {
-                        Text(" Read ")
-                    } icon: {
-                        Image(systemName: "document.fill")
-                            .foregroundStyle(AppColors.read)
-                    }
-                })
-                
-                SidebarRow(tab: .converse, selectedTab: $selectedTab, label: {
-                    Label {
-                        Text(" Converse ")
-                    } icon: {
-                        Image(systemName: "bubble.left.and.text.bubble.right.fill")
-                            .foregroundStyle(AppColors.converse)
-                    }
-                })
-                
-                SidebarRow(tab: .learn, selectedTab: $selectedTab, label: {
-                    Label {
-                        Text(" Learn ")
-                    } icon: {
-                        Image(systemName: "pencil")
-                            .foregroundStyle(AppColors.learn)
-                    }
-                })
-                
-                SidebarRow(tab: .settings, selectedTab: $selectedTab, label: {
-                    Label {
-                        Text(" Settings ")
-                    } icon: {
-                        Image(systemName: "gearshape.fill")
-                            .foregroundStyle(AppColors.settings)
-                    }
-                })
+                SidebarRow(tab: .help, selectedTab: $selectedTab) {
+                    Label(" Help ", systemImage: "info")
+                        .foregroundStyle(AppColors.help)
+                }
+
+                SidebarRow(tab: .read, selectedTab: $selectedTab) {
+                    Label(" Read ", systemImage: "document.fill")
+                        .foregroundStyle(AppColors.read)
+                }
+
+                SidebarRow(tab: .converse, selectedTab: $selectedTab) {
+                    Label(" Converse ", systemImage: "bubble.left.and.text.bubble.right.fill")
+                        .foregroundStyle(AppColors.converse)
+                }
+
+                SidebarRow(tab: .learn, selectedTab: $selectedTab) {
+                    Label(" Learn ", systemImage: "pencil")
+                        .foregroundStyle(AppColors.learn)
+                }
+
+                SidebarRow(tab: .settings, selectedTab: $selectedTab) {
+                    Label(" Settings ", systemImage: "gearshape.fill")
+                        .foregroundStyle(AppColors.settings)
+                }
             }
             .listStyle(.sidebar)
             .navigationTitle("Haptille")
         } detail: {
-            Group {
-                switch selectedTab {
-                case .help: helpView()
-                case .learn: learnView()
-                case .read: readView()
-                case .converse: converseView()
-                case .settings: settingsView(selectedTab: $selectedTab)
-                }
+            switch selectedTab {
+            case .help: HelpView()
+            case .read: ReadView()
+            case .converse: ConverseView()
+            case .learn: LearnView()
+            case .settings: SettingsView(selectedTab: $selectedTab)
             }
         }
-        .sheet(item: $helpMessageCoordinator.draft) { draft in
+        .sheet(item: $messageCoordinator.draft) { draft in
             MessageComposer(
                 recipients: draft.recipients,
                 body: draft.body,
-                onFinish: { helpMessageCoordinator.dismiss() }
+                onFinish: { messageCoordinator.dismiss() }
             )
         }
     }
@@ -78,7 +56,6 @@ struct ContentView: View {
 enum Tab: Hashable {
     case help, learn, read, converse, settings
 }
-
 
 #Preview {
     ContentView(selectedTab: .constant(.help))

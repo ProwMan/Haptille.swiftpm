@@ -1,13 +1,6 @@
-//
-//  learnControls.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 
-struct learnControls: View {
+struct LearnControls: View {
     let isPlaying: Bool
     let isFirst: Bool
     let isLast: Bool

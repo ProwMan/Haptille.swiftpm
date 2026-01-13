@@ -1,10 +1,3 @@
-//
-//  haptilleEngine.swift
-//  Haptille
-//
-//  Created by Madhan on 24/12/25.
-//
-
 import UIKit
 import AVFoundation
 
@@ -13,18 +6,17 @@ private final class HapticHelper {
     static let shared = HapticHelper()
     private let generator = UIImpactFeedbackGenerator(style: .heavy)
 
-    func trigger(intensity: CGFloat) {
+    func trigger(_ intensity: CGFloat) {
         generator.prepare()
         generator.impactOccurred(intensity: intensity)
     }
 }
 
 actor HaptilleEngine {
-
     private let audioEngine: AVAudioEngine?
     private let player: AVAudioPlayerNode?
-    private let outputFormat: AVAudioFormat?
-    private let isEngineReady: Bool
+    private let format: AVAudioFormat?
+    private let ready: Bool
 
     init() {
         let session = AVAudioSession.sharedInstance()
@@ -34,42 +26,35 @@ actor HaptilleEngine {
         let engine = AVAudioEngine()
         let mixerFormat = engine.mainMixerNode.outputFormat(forBus: 0)
 
-        // Guard against invalid audio format (e.g., 0 channels on simulator)
-        guard mixerFormat.channelCount > 0, mixerFormat.sampleRate > 0 else {
-            self.audioEngine = nil
-            self.player = nil
-            self.outputFormat = nil
-            self.isEngineReady = false
+        guard mixerFormat.channelCount > 0,
+              mixerFormat.sampleRate > 0,
+              let fmt = AVAudioFormat(
+                  standardFormatWithSampleRate: mixerFormat.sampleRate,
+                  channels: mixerFormat.channelCount
+              ) else {
+            audioEngine = nil
+            player = nil
+            format = nil
+            ready = false
             return
         }
 
-        guard let format = AVAudioFormat(
-            standardFormatWithSampleRate: mixerFormat.sampleRate,
-            channels: mixerFormat.channelCount
-        ) else {
-            self.audioEngine = nil
-            self.player = nil
-            self.outputFormat = nil
-            self.isEngineReady = false
-            return
-        }
-
-        let playerNode = AVAudioPlayerNode()
-        engine.attach(playerNode)
-        engine.connect(playerNode, to: engine.mainMixerNode, format: format)
-        playerNode.volume = 1.0
+        let node = AVAudioPlayerNode()
+        engine.attach(node)
+        engine.connect(node, to: engine.mainMixerNode, format: fmt)
+        node.volume = 1.0
 
         do {
             try engine.start()
-            self.audioEngine = engine
-            self.player = playerNode
-            self.outputFormat = format
-            self.isEngineReady = true
+            audioEngine = engine
+            player = node
+            format = fmt
+            ready = true
         } catch {
-            self.audioEngine = nil
-            self.player = nil
-            self.outputFormat = nil
-            self.isEngineReady = false
+            audioEngine = nil
+            player = nil
+            format = nil
+            ready = false
         }
     }
 
@@ -80,62 +65,54 @@ actor HaptilleEngine {
     func execute(_ symbol: HaptilleSymbol, settings: HaptilleSettingsSnapshot) async {
         switch symbol {
         case .strong:
-            await output(
-                intensity: 1.0,
-                gain: 2.5,
-                dotDuration: settings.dotDuration,
-                frequency: Float(settings.frequency)
-            )
+            await output(intensity: 1.0, gain: 2.5, duration: settings.dotDuration, freq: settings.frequency)
         case .weak:
-            await output(
-                intensity: 0.25,
-                gain: 1.0,
-                dotDuration: settings.dotDuration,
-                frequency: Float(settings.frequency)
-            )
+            await output(intensity: 0.25, gain: 1.0, duration: settings.dotDuration, freq: settings.frequency)
         case .shortPause:
-            await sleep(seconds: settings.shortGap)
+            await pause(settings.shortGap)
         case .mediumPause:
-            await sleep(seconds: settings.mediumGap)
+            await pause(settings.mediumGap)
         case .longPause:
-            await sleep(seconds: settings.longGap)
+            await pause(settings.longGap)
         }
     }
 
-    private func output(intensity: Float, gain: Float, dotDuration: Double, frequency: Float) async {
-        let isPhone = await MainActor.run { UIDevice.current.userInterfaceIdiom == .phone }
+    private func output(intensity: Float, gain: Float, duration: Double, freq: Double) async {
+        let isPhone = await MainActor.run {
+            UIDevice.current.userInterfaceIdiom == .phone
+        }
+
         if isPhone {
             await MainActor.run {
-                HapticHelper.shared.trigger(intensity: CGFloat(intensity))
+                HapticHelper.shared.trigger(CGFloat(intensity))
             }
         } else {
-            playSpeakerVibration(intensity: intensity, gain: gain, frequency: frequency, dotDuration: dotDuration)
+            playTone(intensity: intensity, gain: gain, freq: Float(freq), duration: duration)
         }
 
-        await sleep(seconds: dotDuration)
+        await pause(duration)
     }
 
-    private func playSpeakerVibration(intensity: Float, gain: Float, frequency: Float, dotDuration: Double) {
-        guard isEngineReady, let outputFormat = outputFormat, let player = player else { return }
+    private func playTone(intensity: Float, gain: Float, freq: Float, duration: Double) {
+        guard ready, let format, let player else { return }
 
-        let sampleRate = 44100
-        let frameCount = Int(Float(sampleRate) * Float(dotDuration))
+        let sampleRate: Float = 44100
+        let frameCount = Int(sampleRate * Float(duration))
 
         guard let buffer = AVAudioPCMBuffer(
-            pcmFormat: outputFormat,
+            pcmFormat: format,
             frameCapacity: AVAudioFrameCount(frameCount)
         ) else { return }
 
         buffer.frameLength = buffer.frameCapacity
 
-        if let channelData = buffer.floatChannelData {
-            for i in 0..<frameCount {
-                let wave = sin(2 * .pi * frequency * Float(i) / Float(sampleRate))
-                let scaled = wave * intensity * gain
-                let sample = max(-1.0, min(1.0, scaled))
-                for channel in 0..<Int(outputFormat.channelCount) {
-                    channelData[channel][i] = sample
-                }
+        guard let channelData = buffer.floatChannelData else { return }
+
+        for i in 0..<frameCount {
+            let wave = sin(2 * .pi * freq * Float(i) / sampleRate)
+            let sample = max(-1.0, min(1.0, wave * intensity * gain))
+            for ch in 0..<Int(format.channelCount) {
+                channelData[ch][i] = sample
             }
         }
 
@@ -143,8 +120,7 @@ actor HaptilleEngine {
         player.play()
     }
 
-    private func sleep(seconds: Double) async {
-        let nanoseconds = UInt64(seconds * 1_000_000_000)
-        try? await Task.sleep(nanoseconds: nanoseconds)
+    private func pause(_ seconds: Double) async {
+        try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
     }
 }

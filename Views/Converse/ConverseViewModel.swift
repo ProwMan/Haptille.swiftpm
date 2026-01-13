@@ -1,10 +1,3 @@
-//
-//  ConverseViewModel.swift
-//  Haptille
-//
-//  Created by Madhan on 23/12/25.
-//
-
 import SwiftUI
 
 @MainActor
@@ -14,8 +7,8 @@ final class ConverseViewModel: ObservableObject {
         case bottom
     }
 
-    let topRecognizer = speechRecognizer()
-    let bottomRecognizer = speechRecognizer()
+    let topRecognizer = SpeechRecognizer()
+    let bottomRecognizer = SpeechRecognizer()
     @Published var topDeafBlindMode = false
     @Published var bottomDeafBlindMode = false
     private let haptille = HaptilleLogic.shared

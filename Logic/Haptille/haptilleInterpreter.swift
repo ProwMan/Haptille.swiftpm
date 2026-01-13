@@ -1,10 +1,3 @@
-//
-//  haptilleInterpreter.swift
-//  Haptille
-//
-//  Created by Madhan on 24/12/25.
-//
-
 import Foundation
 
 func haptilleSymbols(from text: String, alphabet: [Character: [HaptilleSymbol]]) -> [HaptilleSymbol] {
